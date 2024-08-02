@@ -34,9 +34,10 @@ For a Windows setup, you'll need to follow specific steps to ensure your environ
    espup install
    ```
 
-3. **You also need to install Python and git**
-   Install python:  [Python](https://www.python.org/downloads/windows/)
-   Install git: [Git](https://git-scm.com/downloads)
+3. **You also need to install Python and git**  
+   Install python by following the instructions here: [Python](https://www.python.org/downloads/windows/)  
+   Install git by following the instructions here: [Git](https://git-scm.com/downloads)
+   
 ## 2. Set Up Environment Variables
 
 Normally this step is not necessary as the espup installer already adds the necessary environment variables.
