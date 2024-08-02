@@ -68,7 +68,7 @@ Make sure your environment variables are correctly set up to include the Xtensa 
  
 1. **Clone esp-idf**
 
-   In this example we will clone the tools to `C:\rust`. You can use another folder if you want to, preferably a folder that is excluded from the antivirus. Here is a guide to exclude folders from Windows antivirus [[Exclude a folder from Windows antivirus]]  Create the folder, exclude it from antivirus, and run these commands:   
+   In this example we will clone the tools to `C:\rust`. You can use another folder if you want to, preferably a folder that is excluded from the antivirus. Here is a guide to exclude folders from Windows antivirus [Exclude folders from Windows antivirus](Exclude a folder from Windows antivirus.md). Create the folder, exclude it from antivirus, and run these commands:   
 
    ```sh
    cd C:\rust
