@@ -16,7 +16,17 @@ If the Xavier NX has an SSD attached to its m2 slot, you can move the OS to it s
 1. **Backup Your Data:**
    - Make sure to back up any important data on your SD card.
      
-2.  **Mount the SD Card and NVMe:**
+2. **List your storage devices to identify the SD Card:
+     ```bash
+     lsblk
+     ```
+     We're going to assume the SD Card is mmcblk0p1 and NVME is nvme0n1p1, but it might be different on your device.
+3.  **Format the NVME**
+     ```
+     sudo mkfs.ext4 /dev/nvme0n1p1
+     ```
+
+4.  **Mount the SD Card and NVMe:**
    - Mount both filesystems:
      ```bash
      sudo mkdir -p /mnt/sd
