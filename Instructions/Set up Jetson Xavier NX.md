@@ -243,7 +243,12 @@ If you for some reason want to switch back to booting from SD Card after you've 
 1. **Boot from the NVMe drive:**
    - Ensure your Jetson device is currently running from the NVMe drive.
 
-2. **Edit the Boot Configuration:**
+2. **List your storage devices to identify the SD Card:
+     ```bash
+     lsblk
+     ```
+     **The rest of the instructions will assume that your SD Card is named mmcblk0p1**
+3. **Edit the Boot Configuration:**
    - Open the `extlinux.conf` file:
      ```bash
      sudo nano /boot/extlinux/extlinux.conf
@@ -254,13 +259,13 @@ If you for some reason want to switch back to booting from SD Card after you've 
      ```
    - Save the file and exit the editor (`Ctrl+O` to save, `Enter` to confirm, and `Ctrl+X` to exit).
 
-3. **Mount the SD Card Root Filesystem:**
+4. **Mount the SD Card Root Filesystem:**
    - Mount the SD card root filesystem to modify its configuration:
      ```bash
      sudo mount /dev/mmcblk0p1 /mnt
      ```
 
-4. **Update the `/etc/fstab` File on the SD Card:**
+5. **Update the `/etc/fstab` File on the SD Card:**
    - Edit the `/etc/fstab` file on the SD card:
      ```bash
      sudo nano /mnt/etc/fstab
@@ -271,7 +276,7 @@ If you for some reason want to switch back to booting from SD Card after you've 
      ```
    - Save the file and exit the editor (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-5. **Bind Mount Special Filesystems:**
+6. **Bind Mount Special Filesystems:**
    - Bind mount the special filesystems to ensure they are correctly handled:
      ```bash
      sudo mount --bind /proc /mnt/proc
@@ -280,13 +285,13 @@ If you for some reason want to switch back to booting from SD Card after you've 
      sudo mount --bind /run /mnt/run
      ```
 
-6. **Chroot into the SD Card Environment:**
+7. **Chroot into the SD Card Environment:**
    - Chroot into the SD card environment:
      ```bash
      sudo chroot /mnt
      ```
 
-7. **Verify Configuration Inside the Chroot:**
+8. **Verify Configuration Inside the Chroot:**
    - Verify that `/etc/fstab` is correctly configured inside the chroot environment:
      ```bash
      nano /etc/fstab
@@ -297,13 +302,13 @@ If you for some reason want to switch back to booting from SD Card after you've 
      ```
    - Save the file and exit the editor (`Ctrl+O`, `Enter`, `Ctrl+X`).
 
-8. **Exit the Chroot Environment:**
+9. **Exit the Chroot Environment:**
    - Exit the chroot environment:
      ```bash
      exit
      ```
 
-9. **Unmount Special Filesystems and the SD Card:**
+10. **Unmount Special Filesystems and the SD Card:**
    - Unmount the special filesystems and the SD card:
      ```bash
      sudo umount /mnt/proc
@@ -313,7 +318,7 @@ If you for some reason want to switch back to booting from SD Card after you've 
      sudo umount /mnt
      ```
 
-10. **Reboot Your Jetson Device:**
+11. **Reboot Your Jetson Device:**
     - Now, reboot your Jetson device. It should boot from the SD card:
       ```bash
       sudo reboot
