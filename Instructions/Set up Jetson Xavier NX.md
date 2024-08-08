@@ -19,6 +19,8 @@ If the Xavier NX has an SSD attached to its m2 slot, you can move the OS to it s
 2.  **Mount the SD Card and NVMe:**
    - Mount both filesystems:
      ```bash
+     sudo mkdir -p /mnt/sd
+     sudo mkdir -p /mnt/nvme
      sudo mount /dev/mmcblk0p1 /mnt/sd
      sudo mount /dev/nvme0n1p1 /mnt/nvme
      ```
