@@ -266,6 +266,12 @@ To apply the changes, you need to restart the system. You can do this through SS
 sudo reboot
 ```
 
+#### Restore xorg.conf (If things don't work)
+If you want to restore the backup for some reason:
+``` bash 
+sudo cp /etc/X11/xorg.conf.backup /etc/X11/xorg.conf
+```
+
 ### 4. Connect from a Remote Machine
 
 On your remote machine, open your VNC client. Connect using the Jetson Nano's IP address. When prompted, enter the password you set earlier.
