@@ -115,6 +115,7 @@ LABEL sdcard
   APPEND ${cbootargs} root=/dev/mmcblk0p1 rw rootwait
 ```
 The information in your file is probably a little bit different, and that's why you make a copy of the section.
+Pay attention to the MENU LABEL as this is what you will be seeing in your boot options menu.
 Save and exit the file.
 
 ## Unmount and Reboot
