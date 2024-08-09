@@ -275,9 +275,18 @@ sudo cp /etc/X11/xorg.conf.backup /etc/X11/xorg.conf
 ### 4. Connect from a Remote Machine
 
 On your remote machine, open your VNC client. Connect using the Jetson Nano's IP address. When prompted, enter the password you set earlier.
-Conclusion
+If it doesn't work, check if the service is running on the jetson:
+```
+systemctl --user status vino-server
+```
 
-You should now be able to access your Jetson Nano's desktop remotely. If you face any issues, ensure your VNC client and server are compatible and that there are no firewall restrictions.
+If not, you have to run 
+```
+systemctl --user enable vino-server
+systemctl --user start vino-server
+```
+
+Then it should work.
 
 ### Manually Adding Vino to Startup
 
