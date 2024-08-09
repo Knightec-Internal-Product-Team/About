@@ -9,8 +9,10 @@ There is only one way that is known to be working, and that is flashing a jetpac
 1. Jetpack 5.1.3 is the latest Jetpack that is compatible with Xavier NX at the time of writing. Download the image for SD card here https://developer.nvidia.com/embedded/jetpack-sdk-513 (Orin NX is a newer platform, but since this is a Xavier make sure you pick the right one)
 2. Flash the image to an SD card with Balena etcher. https://etcher.balena.io/
 
+The first time you start the jetson with the sd card, the boot some times get stuck on "starting configuration process" or similar. Then you need to make sure you connect a keyboard and mouse and restart the jetson. The GUI should come up after a couple of minutes and you can configure the OS.
+
 ## Move the OS to NVME SSD
-If the Xavier NX has an SSD attached to its m2 slot, you can move the OS to it since it's usually a bit faster than SD card.
+If the Xavier NX has an SSD attached to its m2 slot, you can move the OS to it since it's usually a bit faster than SD card. This process can be done via SSH.
 
 ## Backup Your Data
 Make sure to back up any important data on your SD card.
@@ -82,11 +84,18 @@ sudo mount --bind /run /mnt/nvme/run
 
 ## Update the Boot Configuration
 Edit the boot configuration to make the NVMe drive the primary boot option:
+
+First, save a backup.
+```bash
+sudo cp /boot/extlinux/extlinux.conf /boot/extlinux/extlinux.conf.bak
+```
+Then edit the file.
 ```bash
 sudo nano /boot/extlinux/extlinux.conf
 ```
-Modify the `extlinux.conf` to make NVMe the default boot option:
+Modify the `extlinux.conf` to make NVMe the default boot option. You will see an entry with LABEL primary. Copy the section and rename it to nvme. Make sure that root is set to /dev/nvme0n1p1 on that section. Your end result will look something like this:
 
+** Don't copy the text below , it's just an example. **
 ```plaintext
 TIMEOUT 30
 DEFAULT nvme
@@ -105,26 +114,8 @@ LABEL sdcard
   INITRD /boot/initrd
   APPEND ${cbootargs} root=/dev/mmcblk0p1 rw rootwait
 ```
-
+The information in your file is probably a little bit different, and that's why you make a copy of the section.
 Save and exit the file.
-
-## Reconfigure the System for the New Root Filesystem on NVMe
-Chroot into the NVMe drive environment:
-```bash
-sudo chroot /mnt/nvme
-```
-Update the `fstab` file in the NVMe drive:
-```bash
-nano /etc/fstab
-```
-Ensure an entry for the NVMe root filesystem is included:
-```plaintext
-/dev/nvme0n1p1  /  ext4  defaults  0  1
-```
-Exit the chroot environment:
-```bash
-exit
-```
 
 ## Unmount and Reboot
 Unmount the special filesystems and the NVMe drive:
@@ -139,6 +130,8 @@ Reboot the Jetson device:
 ```bash
 sudo reboot
 ```
+
+During the boot up, you will see two choices, 0 and 1. It corresponds to the sections in your extlinux.conf, so if you put the nvme on top 0 is going to be booting from nvme. 
 
 ## Verify
 After rebooting, verify that the system is running from the NVMe drive:
