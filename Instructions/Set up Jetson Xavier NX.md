@@ -258,6 +258,10 @@ EndSection
 ```
 Press CTRL + O and enter to save and CTRL + X to exit.
 
+Be aware that this will make your HDMI stop working, because the screen gets assigned to the VNC instead. If you want to use the HDMI for display, you have to use SSH, remove the screen section from xorg.conf and reboot.
+
+You can also skip the step where you add the screen section alltogether. Then you will have to start the jetson with HDMI connected, and you will be able to use VNC to see the screen.
+
 #### Restart the System:
 
 To apply the changes, you need to restart the system. You can do this through SSH:
