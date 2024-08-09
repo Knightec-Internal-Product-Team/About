@@ -12,131 +12,145 @@ There is only one way that is known to be working, and that is flashing a jetpac
 ## Move the OS to NVME SSD
 If the Xavier NX has an SSD attached to its m2 slot, you can move the OS to it since it's usually a bit faster than SD card.
 
+## Backup Your Data
+Make sure to back up any important data on your SD card.
 
-Here's the corrected and properly numbered list:
+## Install an Editor
+In this example, we'll use nano.
+```bash
+sudo apt-get install nano
+```
 
-1. **Backup Your Data:**
-   - Make sure to back up any important data on your SD card.
+## List Your Storage Devices to Identify the SD Card and NVMe
+List your storage devices to identify the SD Card and NVMe:
+```bash
+lsblk
+```
+Assume the SD Card is `mmcblk0p1` and NVMe is `nvme0n1p1`, but it might be different on your device.
 
-2. **Install an Editor:**
-   - In this example, we'll use nano.
-     ```bash
-     sudo apt-get install nano
-     ```
+## Prepare the NVMe Drive
+Boot your Jetson device using the SD card.
+Open a terminal.
+List your storage devices to identify the NVMe drive:
+```bash
+lsblk
+```
+Start `parted` to partition the NVMe drive (assuming it is `/dev/nvme0n1`):
+```bash
+sudo parted /dev/nvme0n1
+```
+Create a new partition table:
+```parted
+mklabel gpt
+```
+Create a new primary partition:
+```parted
+mkpart primary ext4 0% 100%
+```
+Exit `parted`:
+```parted
+quit
+```
 
-3. **List Your Storage Devices to Identify the SD Card:**
-   - List your storage devices to identify the SD Card:
-     ```bash
-     lsblk
-     ```
-   - We're going to assume the SD Card is `mmcblk0p1` and NVMe is `nvme0n1p1`, but it might be different on your device.
+## Format the New Partition
+Format the new partition with the ext4 filesystem and set a label (optional):
+```bash
+sudo mkfs.ext4 -L KnghtSSD /dev/nvme0n1p1
+```
 
-4. **Prepare the NVMe Drive:**
-   - Boot your Jetson device using the SD card.
-   - Open a terminal.
-   - List your storage devices to identify the NVMe drive:
-     ```bash
-     lsblk
-     ```
-   - Start `parted` to partition the NVMe drive (assuming it is `/dev/nvme0n1`):
-     ```bash
-     sudo parted /dev/nvme0n1
-     ```
-   - Create a new partition table:
-     ```bash
-     (parted) mklabel gpt
-     ```
-   - Create a new primary partition:
-     ```bash
-     (parted) mkpart primary ext4 0% 100%
-     ```
-   - Exit `parted`:
-     ```bash
-     (parted) quit
-     ```
+## Mount the NVMe Drive
+Create a mount point and mount the NVMe drive:
+```bash
+sudo mkdir /mnt/nvme
+sudo mount /dev/nvme0n1p1 /mnt/nvme
+```
 
-5. **Format the New Partition:**
-   - Format the new partition with the ext4 filesystem and set a label (optional):
-     ```bash
-     sudo mkfs.ext4 -L my_custom_label /dev/nvme0n1p1
-     ```
+## Clone the SD Card to the NVMe Drive
+Use `rsync` to copy the root filesystem, excluding the special filesystems:
+```bash
+sudo rsync -axHAWXS --numeric-ids --info=progress2 / /mnt/nvme
+```
 
-6. **Mount the NVMe Drive:**
-   - Create a mount point and mount the NVMe drive:
-     ```bash
-     sudo mkdir /mnt/nvme
-     sudo mount /dev/nvme0n1p1 /mnt/nvme
-     ```
+## Ensure Special Filesystems Are Not Mounted
+Bind mount special filesystems to ensure they are correctly handled during the chroot:
+```bash
+sudo mount --bind /proc /mnt/nvme/proc
+sudo mount --bind /sys /mnt/nvme/sys
+sudo mount --bind /dev /mnt/nvme/dev
+sudo mount --bind /run /mnt/nvme/run
+```
 
-7. **Clone the SD Card to the NVMe Drive:**
-   - Use `rsync` to copy the root filesystem, excluding the special filesystems:
-     ```bash
-     sudo rsync -axHAWXS --numeric-ids --info=progress2 / /mnt/nvme
-     ```
+## Update the Boot Configuration
+Edit the boot configuration to make the NVMe drive the primary boot option:
+```bash
+sudo nano /boot/extlinux/extlinux.conf
+```
+Modify the `extlinux.conf` to make NVMe the default boot option:
 
-8. **Ensure Special Filesystems Are Not Mounted:**
-   - Bind mount special filesystems to ensure they are correctly handled during the chroot:
-     ```bash
-     sudo mount --bind /proc /mnt/nvme/proc
-     sudo mount --bind /sys /mnt/nvme/sys
-     sudo mount --bind /dev /mnt/nvme/dev
-     sudo mount --bind /run /mnt/nvme/run
-     ```
+```plaintext
+TIMEOUT 30
+DEFAULT nvme
 
-9. **Update the Boot Configuration:**
-   - Edit the boot configuration to use the NVMe drive as the root filesystem:
-     ```bash
-     sudo nano /boot/extlinux/extlinux.conf
-     ```
-   - Modify the `APPEND` line to use the NVMe drive:
-     ```plaintext
-     APPEND ${cbootargs} root=/dev/nvme0n1p1 rw rootwait
-     ```
-   - Save and exit the file.
+MENU TITLE Jetson Xavier NX Boot Options
 
-10. **Reconfigure the System for the New Root Filesystem:**
-    - Chroot into the NVMe drive environment:
-      ```bash
-      sudo chroot /mnt/nvme
-      ```
-    - Update the `fstab` file in the NVMe drive:
-      ```bash
-      nano /etc/fstab
-      ```
-      Make sure to include an entry for the NVMe root filesystem:
-      ```plaintext
-      /dev/nvme0n1p1  /  ext4  defaults  0  1
-      ```
-    - Exit the chroot environment:
-      ```bash
-      exit
-      ```
+LABEL nvme
+  MENU LABEL Boot from NVMe (Primary)
+  LINUX /boot/Image
+  INITRD /boot/initrd
+  APPEND ${cbootargs} root=/dev/nvme0n1p1 rw rootwait
 
-11. **Unmount and Reboot:**
-    - Unmount the special filesystems and the NVMe drive:
-      ```bash
-      sudo umount /mnt/nvme/proc
-      sudo umount /mnt/nvme/sys
-      sudo umount /mnt/nvme/dev
-      sudo umount /mnt/nvme/run
-      sudo umount /mnt/nvme
-      ```
-    - Reboot the Jetson device:
-      ```bash
-      sudo reboot
-      ```
+LABEL sdcard
+  MENU LABEL Boot from SD Card (Backup)
+  LINUX /boot/Image
+  INITRD /boot/initrd
+  APPEND ${cbootargs} root=/dev/mmcblk0p1 rw rootwait
+```
 
-12. **Verify:**
-    - After rebooting, verify that the system is running from the NVMe drive:
-      ```bash
-      df -h /
-      ```
+Save and exit the file.
+
+## Reconfigure the System for the New Root Filesystem on NVMe
+Chroot into the NVMe drive environment:
+```bash
+sudo chroot /mnt/nvme
+```
+Update the `fstab` file in the NVMe drive:
+```bash
+nano /etc/fstab
+```
+Ensure an entry for the NVMe root filesystem is included:
+```plaintext
+/dev/nvme0n1p1  /  ext4  defaults  0  1
+```
+Exit the chroot environment:
+```bash
+exit
+```
+
+## Unmount and Reboot
+Unmount the special filesystems and the NVMe drive:
+```bash
+sudo umount /mnt/nvme/proc
+sudo umount /mnt/nvme/sys
+sudo umount /mnt/nvme/dev
+sudo umount /mnt/nvme/run
+sudo umount /mnt/nvme
+```
+Reboot the Jetson device:
+```bash
+sudo reboot
+```
+
+## Verify
+After rebooting, verify that the system is running from the NVMe drive:
+```bash
+df -h /
+```
 The output should indicate that the root filesystem is `/dev/nvme0n1p1` or similar, confirming that the system is booting from the NVMe.
 
-### Summary:
-- The entire filesystem, including special directories, can be copied using `rsync`.
-- Special directories should be bind mounted if needed for chroot operations or runtime access.
-- Boot configuration and `/etc/fstab` should be correctly configured to point to the NVMe.
+# Summary
+- The NVMe is configured as the primary boot drive, and the SD card is set as a backup boot option.
+- The `extlinux.conf` file is modified to default to the NVMe drive, but provides an option to boot from the SD card if needed.
+- If the NVMe drive fails, you can manually select the SD card from the boot menu to continue using the device.
 
 
 # Set up VNC server (Untested)
