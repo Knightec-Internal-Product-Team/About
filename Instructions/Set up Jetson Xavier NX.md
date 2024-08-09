@@ -140,6 +140,43 @@ df -h /
 ```
 The output should indicate that the root filesystem is `/dev/nvme0n1p1` or similar, confirming that the system is booting from the NVMe.
 
+Now that you have booted into the NVME, you should copy the extlinux.conf from the sd card, since that file was changed after the file system was copied.
+
+I understand your frustration. Copying the `extlinux.conf` from the SD card to the NVMe is a straightforward way to ensure that both boot options are preserved. Here’s how you can do it:
+
+### Steps to Copy `extlinux.conf` from the SD Card to the NVMe
+
+1. **Mount the SD Card:**
+   - Assuming you're booted into the NVMe, mount the SD card to a directory:
+   ```bash
+   sudo mkdir /mnt/sdcard
+   sudo mount /dev/mmcblk0p1 /mnt/sdcard
+   ```
+
+2. **Copy `extlinux.conf` from the SD Card to the NVMe:**
+   - Copy the `extlinux.conf` file from the SD card's boot directory to the NVMe:
+   ```bash
+   sudo cp /mnt/sdcard/boot/extlinux/extlinux.conf /boot/extlinux/extlinux.conf
+   ```
+
+3. **Verify the Copy:**
+   - Ensure that the file was copied correctly by viewing it:
+   ```bash
+   cat /boot/extlinux/extlinux.conf
+   ```
+
+4. **Unmount the SD Card:**
+   - Once done, unmount the SD card:
+   ```bash
+   sudo umount /mnt/sdcard
+   ```
+
+5. **Reboot to Test:**
+   - Reboot the system to confirm that the copied `extlinux.conf` works as expected:
+   ```bash
+   sudo reboot
+   ```
+
 # Summary
 - The NVMe is configured as the primary boot drive, and the SD card is set as a backup boot option.
 - The `extlinux.conf` file is modified to default to the NVMe drive, but provides an option to boot from the SD card if needed.
@@ -265,98 +302,3 @@ To start the Vino server automatically, you can add it to the autostart applicat
    ```bash
    reboot
    ```
-
-# Switch back to SD Card from NVME
-
-If you for some reason want to switch back to booting from SD Card after you've switched to boot from NVME, follow this instruction
-
-1. **Boot from the NVMe drive:**
-   - Ensure your Jetson device is currently running from the NVMe drive.
-
-2. **List your storage devices to identify the SD Card:
-     ```bash
-     lsblk
-     ```
-     **The rest of the instructions will assume that your SD Card is named mmcblk0p1**
-3. **Edit the Boot Configuration:**
-   - Open the `extlinux.conf` file:
-     ```bash
-     sudo nano /boot/extlinux/extlinux.conf
-     ```
-   - Find the `APPEND` line and update the `root` parameter to point to the SD card:
-     ```plaintext
-     APPEND ${cbootargs} console=ttyS0,115200n8 console=tty0 root=/dev/mmcblk0p1 rw rootwait
-     ```
-   - Save the file and exit the editor (`Ctrl+O` to save, `Enter` to confirm, and `Ctrl+X` to exit).
-
-4. **Mount the SD Card Root Filesystem:**
-   - Mount the SD card root filesystem to modify its configuration:
-     ```bash
-     sudo mount /dev/mmcblk0p1 /mnt
-     ```
-
-5. **Update the `/etc/fstab` File on the SD Card:**
-   - Edit the `/etc/fstab` file on the SD card:
-     ```bash
-     sudo nano /mnt/etc/fstab
-     ```
-   - Ensure the root filesystem entry points to the SD card:
-     ```plaintext
-     /dev/mmcblk0p1  /  ext4  defaults  0  1
-     ```
-   - Save the file and exit the editor (`Ctrl+O`, `Enter`, `Ctrl+X`).
-
-6. **Bind Mount Special Filesystems:**
-   - Bind mount the special filesystems to ensure they are correctly handled:
-     ```bash
-     sudo mount --bind /proc /mnt/proc
-     sudo mount --bind /sys /mnt/sys
-     sudo mount --bind /dev /mnt/dev
-     sudo mount --bind /run /mnt/run
-     ```
-
-7. **Chroot into the SD Card Environment:**
-   - Chroot into the SD card environment:
-     ```bash
-     sudo chroot /mnt
-     ```
-
-8. **Verify Configuration Inside the Chroot:**
-   - Verify that `/etc/fstab` is correctly configured inside the chroot environment:
-     ```bash
-     nano /etc/fstab
-     ```
-   - Ensure the root filesystem entry points to the SD card:
-     ```plaintext
-     /dev/mmcblk0p1  /  ext4  defaults  0  1
-     ```
-   - Save the file and exit the editor (`Ctrl+O`, `Enter`, `Ctrl+X`).
-
-9. **Exit the Chroot Environment:**
-   - Exit the chroot environment:
-     ```bash
-     exit
-     ```
-
-10. **Unmount Special Filesystems and the SD Card:**
-   - Unmount the special filesystems and the SD card:
-     ```bash
-     sudo umount /mnt/proc
-     sudo umount /mnt/sys
-     sudo umount /mnt/dev
-     sudo umount /mnt/run
-     sudo umount /mnt
-     ```
-
-11. **Reboot Your Jetson Device:**
-    - Now, reboot your Jetson device. It should boot from the SD card:
-      ```bash
-      sudo reboot
-      ```
-
-### Verification:
-After rebooting, verify that your system is running from the SD card by checking the root filesystem:
-```bash
-df -h /
-```
-The output should indicate that the root filesystem is `/dev/mmcblk0p1` or similar, confirming that the system is booting from the SD card.
