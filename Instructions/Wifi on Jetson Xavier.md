@@ -26,7 +26,7 @@ This command will display a list of Wi-Fi networks (SSIDs) available in your are
 To connect to a Wi-Fi network, use the `nmcli` command with the network’s SSID and password:
 
 ```bash
-nmcli device wifi connect "Your_SSID" password "Your_WiFi_Password"
+sudo nmcli device wifi connect "Your_SSID" password "Your_WiFi_Password"
 ```
 
 Replace `Your_SSID` with the name of the Wi-Fi network you want to connect to and `Your_WiFi_Password` with the network’s password.
@@ -62,7 +62,7 @@ This command should display the IP address assigned to the `wlan0` interface if 
 If you want the Jetson Xavier NX to automatically connect to this Wi-Fi network in the future, you can set the connection to auto-connect:
 
 ```bash
-nmcli connection modify "Your_SSID" connection.autoconnect yes
+sudo nmcli connection modify "Your_SSID" connection.autoconnect yes
 ```
 
 This will ensure that the Jetson will connect to the Wi-Fi network automatically whenever it is in range.
