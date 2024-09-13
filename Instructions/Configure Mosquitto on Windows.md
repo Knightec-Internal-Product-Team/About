@@ -16,7 +16,15 @@ After you have followed these steps, your conf file will look something like thi
 # listener port-number [ip address/host name/unix socket path]
 
 listener 1883
-allow_anonymous true
+protocol mqtt
+ 
+listener 8080
+protocol websockets
+
+[...]
+
+allow_anonymous false
+
 [...]
 # password_file, the plugin check will be made first.
 
@@ -27,12 +35,20 @@ Steps:
 1. Navigate to where you installed mosquitto, default C:\Program Files\mosquitto.
 2. Open mosquitto.conf
 3. Scroll down to # Listeners 
-4. Add: listener 1883 
-5. Scroll down to # Security
-6. Remove the # infront of allow_anonymous false
-7. Scroll down to # Default authentication and topic access control
-8. Remove the # from password_file 
-9. Add the password filename that you chose earlier in this guide, so that it says "password_file [password filename]"
+4. Add:
+   ```
+   listener 1883
+   protocol mqtt
+ 
+   listener 8080
+   protocol websockets
+   ```
+      
+6. Scroll down to # Security
+7. Remove the # infront of allow_anonymous false
+8. Scroll down to # Default authentication and topic access control
+9. Remove the # from password_file 
+10. Add the password filename that you chose earlier in this guide, so that it says "password_file [password filename]"
 
 
 # Starting the server
